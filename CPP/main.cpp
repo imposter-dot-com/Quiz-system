@@ -176,8 +176,8 @@ int main(int argc, char const *argv[])
                                     break;
                                 }
                             }
-                            
                         }
+                        // Dispay all admins
                         else if (adminMode == 3)
                         {
                             clearTerminal();
@@ -185,8 +185,78 @@ int main(int argc, char const *argv[])
                             admin->displayAdmin();
                             pause();
                         }
+                        // Login
                         else if (adminMode == 4)
                         {
+                            while (true)
+                            {
+                                clearTerminal();
+                                string loginID;
+                                cout << "--- Login --- \n" << endl;
+                                cout << "Enter your ID: ";
+                                cin >> loginID;
+                                if(admin->checkAdminID(loginID) == true)
+                                {
+                                    clearTerminal();
+                                    string loginPassword;
+                                    cout << "--- Login --- \n" << endl;
+                                    cout << "Enter your password: ";
+                                    cin >> loginPassword;
+                                    if (admin->checkAdminPassword(loginID, loginPassword) == true)
+                                    {
+                                        clearTerminal();
+                                        cout << "*** Login Sucessfully ***";
+                                        sleep(2);
+                                        while (true)
+                                        {
+                                            int loginOption;
+                                            clearTerminal();
+                                            cout << "*** Welcome ***\n"  << endl;
+                                            cout << "=== Please choose an option ===\n" << endl;
+                                            cout << "1. Create Quiz" << endl;
+                                            cout << "2. Delete Quiz" << endl;
+                                            cout << "3. Update Quiz" << endl;
+                                            cout << "4. Back\n" << endl;
+                                            cout << "Enter here: ";
+                                            cin >> loginOption;
+                                            if (loginOption == 1)
+                                            {
+                                                /* code */
+                                            }
+                                            else if (loginOption == 2)
+                                            {
+                                                /* code */
+                                            }
+                                            else if (loginOption == 3)
+                                            {
+                                                /* code */
+                                            }                                            
+                                            else if (loginOption == 4)
+                                            {
+                                                break;
+                                            }
+                                            else
+                                            {
+                                                cout << "Wrong Input!!" << endl;
+                                                sleep(2);
+                                            }
+                                        }
+                                        break;
+                                    }
+                                    else
+                                    {
+                                        cout << "Wrong Password!!" << endl;
+                                        sleep(2);
+                                        break;
+                                    }
+                                }
+                                else
+                                {
+                                    cout << "Wrong ID!!" << endl;
+                                    sleep(2);
+                                    break;
+                                }
+                            }
                             
                         }
                         else if(adminMode == 5)
@@ -205,8 +275,6 @@ int main(int argc, char const *argv[])
                             cout << "Invalid option!!" << endl;
                             pause();
                         }
-                        
-
                     }
                     
                 }
