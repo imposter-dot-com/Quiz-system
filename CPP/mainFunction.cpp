@@ -51,3 +51,18 @@ bool isFileRead(fstream &myFile, const string &fileName)
         return true;
     }
 }
+
+void pause()
+{
+    cout << "Press ENTER to continue...";
+    fflush(stdin);
+    cin.get();
+                        
+}
+
+
+// int main(int argc, char const *argv[])
+// {
+
+//     return 0;
+// }
