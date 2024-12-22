@@ -117,7 +117,66 @@ int main(int argc, char const *argv[])
                         // Delete an admin
                         else if (adminMode == 2)
                         {
-
+                            while (true)
+                            {
+                                
+                                string delAdminID;
+                                string delAdminPassword;
+                                clearTerminal();
+                                cout << "--- Deleting an Admin ---\n" << endl;
+                                cout << "Enter the admin ID: ";
+                                cin >> delAdminID;
+                                if(admin->checkAdminID(delAdminID) == true)
+                                {
+                                    clearTerminal();
+                                    cout << "--- Deleting an Admin ---\n" << endl;
+                                    cout << "Enter the admin password: ";
+                                    cin >> delAdminPassword;
+                                    if(admin->checkAdminPassword(delAdminID, delAdminPassword) == true)
+                                    {
+                                        while(true)
+                                        {
+                                            int delOption;
+                                            clearTerminal();
+                                            cout << "Are you sure to delete this admin?" << endl;
+                                            cout << "1. Yes" << endl;
+                                            cout << "2. No" << endl;
+                                            cout << "Enter here: ";
+                                            cin >> delOption;
+                                            if(delOption == 1)
+                                            {
+                                                admin->removeAdminFromFile(delAdminID);
+                                                sleep(4);
+                                                break;
+                                            }
+                                            else if (delOption == 2)
+                                            {
+                                                break;
+                                            }
+                                            else
+                                            {
+                                                cout << "Wrong Input!!" << endl;
+                                                sleep(2);
+                                            }
+                                        }
+                                    }
+                                    else
+                                    {
+                                        cout << "Wrong Password!!" << endl;
+                                        sleep(2);
+                                        break;
+                                    }
+                                    break;
+                                }
+                                else
+                                {
+                                    clearTerminal();
+                                    cout << "ID is not in the file" << endl;
+                                    sleep(2);
+                                    break;
+                                }
+                            }
+                            
                         }
                         else if (adminMode == 3)
                         {
@@ -128,10 +187,13 @@ int main(int argc, char const *argv[])
                         }
                         else if (adminMode == 4)
                         {
-                            /* code */
+                            
                         }
                         else if(adminMode == 5)
                         {
+                            clearTerminal();
+                            cout << "*** Exit Admin Mode ***";
+                            sleep(2);
                             goto mainMenu;
                         }
                         else if (adminMode == 6)

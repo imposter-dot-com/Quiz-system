@@ -165,6 +165,46 @@ class Admin
                 name = name->next;
             }
         }
+
+        bool checkAdminID(string TempAdminID)
+        {
+            Box *id;
+            id = head;
+            for(int i = 0; i < size; i++)
+            {
+                if(TempAdminID == id->adminID)
+                {
+                    return true;
+                }
+                if(i == size -1 && TempAdminID != id->adminName)
+                {
+                    return false;
+                }
+                id = id->next;
+            }
+        }
+    // Check Admin Password
+    bool checkAdminPassword(string ID, string password)
+    {
+        Box *p = head;
+
+        while (p != NULL)  // Traverse the linked list
+        {
+            if (ID == p->adminID)  // Check if the name matches
+            {
+                if (password == p->adminPassword)  // Check if the password matches
+                {
+                    return true;  // Both name and password match
+                }
+                else
+                {
+                    return false;  // Name matches but password is incorrect
+                }
+            }
+            p = p->next;
+        }
+        return false;
+    }
 // Check Main Password
         bool checkMainPassowrd(string &inputMainPassword){
             if(mainPassowrd == inputMainPassword)
@@ -213,7 +253,102 @@ class Admin
             {
                 return false;
             }             
-        } 
+        }
+
+void removeAdmin(string adminID)
+{
+    // Handle empty list
+    if (head == NULL) {
+        cout << "Error: The list is empty. No admin to remove." << endl;
+        return;
+    }
+
+    Box *current = head;
+    Box *previous = NULL;
+
+    // Traverse the list to find the node to delete
+    while (current != NULL) {
+        if (current->adminID == adminID) {
+            // Found the node to delete
+
+            if (current == head) {
+                // Removing the head node
+                head = head->next;
+                if (current == tail) {
+                    tail = NULL; // If it was the only node
+                }
+            } else if (current == tail) {
+                // Removing the tail node
+                tail = previous;
+                tail->next = NULL;
+            } else {
+                // Removing a middle node
+                previous->next = current->next;
+            }
+
+            delete current; // Free the memory of the removed node
+            size--; // Decrease the size of the list
+            return;
+        }
+
+        previous = current;      // Move previous to current
+        current = current->next; // Move to the next node
+    }
+
+    // If we reach here, the adminID was not found
+    cout << "Error: Admin with ID " << adminID << " not found." << endl;
+}
+
+// remove admin
+    void removeAdminFromFile(string ID) {
+        string filename = "../CSV-Files/admin.csv";
+        string tempFilename = "../CSV-Files/temp_admin.csv";
+        ifstream inputFile(filename);
+        ofstream tempFile(tempFilename);
+
+        if (!inputFile.is_open() || !tempFile.is_open()) {
+            cerr << "Error: Unable to open file." << endl;
+            return;
+        }
+
+        string line;
+        bool headerSkipped = false; // To track the header row
+
+        while (getline(inputFile, line)) {
+            if (!headerSkipped) {
+                // Write the header to the temp file
+                tempFile << line << "\n";
+                headerSkipped = true;
+                continue;
+            }
+
+            // Extract the adminID from the current line
+            stringstream ss(line);
+            string currentAdminID;
+            getline(ss, currentAdminID, ',');
+
+            // Write to the temp file if this is not the admin to remove
+            if (currentAdminID != ID) {
+                tempFile << line << "\n";
+            }
+        }
+
+        inputFile.close();
+        tempFile.close();
+        removeAdmin(ID); // remove from linked list
+        // Replace the original file with the temp file
+        if (remove(filename.c_str()) != 0) {
+            cerr << "Error: Unable to delete original file." << endl;
+            return;
+        }
+
+        if (rename(tempFilename.c_str(), filename.c_str()) != 0) {
+            cerr << "Error: Unable to rename temp file." << endl;
+            return;
+        }
+
+        cout << "Admin with ID " << ID << " has been removed successfully." << endl;
+    }
 };
 
 // int main(int argc, char const *argv[])
