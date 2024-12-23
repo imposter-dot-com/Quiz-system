@@ -19,6 +19,7 @@ int main(int argc, char const *argv[])
 
         mainMenu:
         clearTerminal();
+        cout << "Welcome to Quiz's system";
         cout << "--- Choose Option Mode ---\n" << endl;
         cout << "1. Admin" << endl;
         cout << "2. User" << endl;

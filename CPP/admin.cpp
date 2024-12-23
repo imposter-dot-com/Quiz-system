@@ -2,6 +2,8 @@
 #include <string>
 #include <sstream>
 #include <fstream>
+#include <vector>
+#include "quiz-question.h"
 using namespace std;
 
 struct Box
@@ -19,6 +21,7 @@ class Admin
     public:
         Box *head, *tail;
         int size;
+        Quiz quiz;
         Admin() // defalt value
         {
             head = NULL;
@@ -43,6 +46,7 @@ class Admin
             }
             size ++;
         }
+
         void insertEnd(string newAdminID, string newAdminName, string newAdminPassword)
         {
             Box *b;
@@ -349,5 +353,71 @@ void removeAdmin(string adminID)
 
         cout << "Admin with ID " << ID << " has been removed successfully." << endl;
     }
+
+    void addQuestion(string& filename, int question_id, string question_text, vector<string>options, vector<string>categories, int correct_answer, Difficulty difficulty){
+        Question newQuestion(question_id, question_text, options, categories, correct_answer, difficulty);
+        quiz.addQuestion(newQuestion);
+
+        ofstream file(filename, ios::app);
+        if(!file.is_open()){
+            cout << "Error opening the file."<<endl;
+            return;
+        }
+        newQuestion.SaveToFile(file);
+        file.close();
+        cout<< "Question has been successfully saved to file." << endl;
+    }
+
+    void displayQuestions(){
+        quiz.displayQuiz();
+    }
+    
+    void updateQuestion(string& filename, int question_id, string newQuestion_text, vector<string> newOptions, vector<string> newCategories, int newCorrect_answer, Difficulty newDifficulty){
+        Question updatedQuestion(question_id, newQuestion_text, newOptions, newCategories, newCorrect_answer, newDifficulty); 
+        quiz.updatedQuestion(updatedQuestion);
+
+        ofstream file(filename, ios::trunc);
+            if(!file.is_open()){
+                cout<<"Error opening the file."<<endl;
+                return;
+            }
+        for(const auto& question: quiz.getQuestion()){
+            question.saveToFile(file);
+        }
+        file.close();
+        cout<<"Question has been successfully updated."<<endl;
+    }
+
+    void deleteQuestions(string& filename, int id){
+        quiz.removeQuestion(id);
+
+        ofstream file(filename, ios::trunc);
+            if(!file.is_open()){
+                cout << "Error opening the file."<<endl;
+                return;
+            }
+
+            for(const auto& question: quiz.getQuestion()){
+                question.SaveToFile(file);
+            }
+            file.close();
+            cout <<"Question has been successfully deleted."<<endl;
+    }
+
+    void generateAndDisplayQuiz(string category, Difficulty difficulty, int numQuestion){
+        vector<Question> randomizedQuestions = quiz.getRandomQuestions(category, difficulty, numQuestion);
+
+        if(randomizedQuestions.empty()){
+            cout << "No questions available for the selected category and difficulty"<<endl;
+            return;
+        }
+        cout<< "Quiz: " << category << " " << difficulty << endl;
+       for(int i = 0; i < randomizedQuestions.size(); ++i){
+            cout<< "Question " << i+1 <<endl;
+            randomizedQuestions[i].display();
+            cout<<endl;
+       }
+    }
+
 };
 
