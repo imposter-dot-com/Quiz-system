@@ -1,108 +1,132 @@
-#include<iostream>
-#include<fstream>
-#include<sstream>
-#include<vector>
-#include<unordered_map>
-#include<cstdlib>
-#include<string>
+#include <iostream>
+#include <fstream>
+#include <sstream>
+#include <vector>
+#include <unordered_map>
+#include <cstdlib>
+#include <string>
+#include <algorithm>
+#include <set>
+#include <ctime>
+#include <random>
 
 using namespace std;
 
-enum Difficulty{
+enum Difficulty
+{
     BEGINNER,
     INTERMEDIATE,
     ADVANCED
 };
 
-string difficultyToString(Difficulty difficulty){
-    switch(difficulty){
-        case BEGINNER:
-            return "BEGINNER";
-            break;
-        case INTERMEDIATE:
-            return "INTERMEDIATE";
-            break;
-        case ADVANCED:
-            return "ADVANCED";
-            break;
-        default:
-            return "UNKNOWN";
-            break;
+string difficultyToString(Difficulty difficulty)
+{
+    switch (difficulty)
+    {
+    case BEGINNER:
+        return "BEGINNER";
+        break;
+    case INTERMEDIATE:
+        return "INTERMEDIATE";
+        break;
+    case ADVANCED:
+        return "ADVANCED";
+        break;
+    default:
+        return "UNKNOWN";
+        break;
     }
 }
 
-Difficulty stringToDifficulty(string& str){
-    if(str=="BEGINNER"){
+Difficulty stringToDifficulty(string &str)
+{
+    if (str == "BEGINNER")
+    {
         return BEGINNER;
     }
-    if(str=="INTERMEDIATE"){
+    if (str == "INTERMEDIATE")
+    {
         return INTERMEDIATE;
     }
-    if(str=="ADVANCED"){
+    if (str == "ADVANCED")
+    {
         return ADVANCED;
     }
     return BEGINNER;
 }
 
-class Question{
-    private:
+class Question
+{
+private:
     int question_id;
     string question_text;
-    vector <string> options;
+    vector<string> options;
     int correct_answer;
-    vector <string> category;
+    vector<string> category;
     Difficulty difficulty;
 
-    public:
-   Question(int question_id, string question_text, vector<string> options, vector<string> category, int correct_answer, Difficulty difficulty)
+public:
+    Question()
+        : question_id(0), question_text(""), correct_answer(0), difficulty(BEGINNER) {}
+
+    Question(int question_id, string question_text, vector<string> options, vector<string> category, int correct_answer, Difficulty difficulty)
         : question_id(question_id), question_text(question_text), options(options), category(category), correct_answer(correct_answer), difficulty(difficulty) {}
 
-    int getId() {return question_id;}
-    string getQuestionText(){return question_text;}
-    vector<string> getOptions(){return options;}
-    int getCorrectAnswer(){return correct_answer;}
-    Difficulty getDifficulty(){return difficulty;}
-    vector<string> getCategory(){return category;}
+    int getId() const { return question_id; }
+    string getQuestionText() const { return question_text; }
+    vector<string> getOptions() const { return options; }
+    int getCorrectAnswer() const { return correct_answer; }
+    Difficulty getDifficulty() const { return difficulty; }
+    vector<string> getCategory() const { return category; }
 
-
-    bool hasCategory(string& category){
-        return find(category.begin(), category.end(), category) != category.end();
+    bool hasCategory(string &cat) const
+    {
+        return find(category.begin(), category.end(), cat) != category.end();
     }
 
-
-    bool check_answer(){
-       return user_answer == correct_answer;
-    }
-
-    void display(){
-        cout<<"Question: "<<question_text<<endl;
-        for(int i = 0; i < options.size(); ++i){
-            cout<<i+1<<". "<<options[i]<<endl;
+    void feedback(int user_answers) const
+    {
+        if (user_answers == correct_answer)
+        {
+            cout << "Correct answer!" << endl;
+        }
+        else
+        {
+            cout << "Incorrect answer. The correct answer is " << correct_answer << endl;
         }
     }
 
-    void SaveToFile(ofstream& file){
+    void display() const
+    {
+        cout << "Question: " << question_text << endl;
+        for (int i = 0; i < options.size(); ++i)
+        {
+            cout << i + 1 << ". " << options[i] << endl;
+        }
+    }
+
+    void SaveToFile(ofstream &file) const
+    {
         file << question_id << "," << question_text << "," << difficultyToString(difficulty) << "," << correct_answer << ",";
 
-        for(const auto& cat:category){
+        for (const auto &cat : category)
+        {
             file << cat << ",";
         }
 
-        for(const auto& option: options){
+        for (const auto &option : options)
+        {
             file << option << ",";
         }
         file << "\n";
     }
 
-    static Question loadFromFile(string line){
+    static Question loadFromFile(const string &line)
+    {
         istringstream iss(line);
-        int id;
-        int correct_answer;
-        string question_text;
-        string difficulty_str;
-        string temp;
-        vector<string> options;
-        vector<string> categories;
+        int id, correct_answer;
+        string question_text, difficulty_str, temp;
+        vector<string> options, categories;
 
         getline(iss, temp, ',');
         id = stoi(temp);
@@ -113,120 +137,154 @@ class Question{
         getline(iss, temp, ',');
         correct_answer = stoi(temp);
 
-        while(getline(iss, temp, ',')){
-            if(temp.empty()){
+        while (getline(iss, temp, ','))
+        {
+            if (temp.empty())
                 break;
-            }
             categories.push_back(temp);
         }
 
-        while(getline(iss,temp,',')){
-            if(temp.empty()){
+        while (getline(iss, temp, ','))
+        {
+            if (temp.empty())
                 break;
-            }
             options.push_back(temp);
         }
 
-        return Question(id, question_text, difficulty, correct_answer, categories, options);
+        return Question(id, question_text, options, categories, correct_answer, difficulty);
     }
-    
 };
 
-class Quiz{
-    private:
+class Quiz
+{
+private:
     int quiz_id;
     string title;
-    unordered_map <int, Question> questions;
-    vector<Question> questions_list;
+    unordered_map<int, Question> questions;
+    int last_question_id = 0;
+    set<int> available_ids;
 
-    public:
-    Quiz(int id, string& title) : id(id), title(title){};
+public:
+    Quiz(int quiz_id, const string &title) : quiz_id(quiz_id), title(title) {};
 
-    void addQuestion(Question& question){
-        question[question.getId()] = question;
-        questions_list.push_back(question);
+    void addQuestion(Question &question)
+    {
+        int question_id;
+        if (!available_ids.empty())
+        {
+            question_id = *available_ids.begin();
+            available_ids.erase(available_ids.begin());
+        }
+        else
+        {
+            question_id = ++last_question_id;
+        }
+
+        Question new_question(question_id, question.getQuestionText(), question.getOptions(), question.getCategory(), question.getCorrectAnswer(), question.getDifficulty());
+        questions[question_id] = new_question;
     }
 
-    void saveToFile(string& filename){
+    void removeQuestion(int question_id)
+    {
+        if (questions.find(question_id) == questions.end())
+        {
+            cout << "Question not found." << endl;
+            return;
+        }
+        available_ids.insert(question_id);
+        questions.erase(question_id);
+    }
+
+    void updateQuestion(const Question &question)
+    {
+        int question_id = question.getId();
+        if (questions.find(question_id) != questions.end())
+        {
+            questions[question_id] = question;
+            cout << "Question updated successfully." << endl;
+        }
+        else
+        {
+            cout << "Question with ID " << question_id << " not found." << endl;
+        }
+    }
+
+    void saveToFile(string &filename)
+    {
         ofstream file(filename);
-        if(!file.is_open()){
-            cout << "Error opening the file." <<endl;
+        if (!file.is_open())
+        {
+            cout << "Error opening the file." << endl;
             return;
         }
 
-        for(const auto& entry : questions){
-            entry.second.saveToFile(file);
+        for (const auto &entry : questions)
+        {
+            entry.second.SaveToFile(file);
         }
 
         file.close();
     }
 
-    void loadFromFile(string& filename){
+    void loadFromFile(const string &filename)
+    {
         ifstream file(filename);
-        if(!file.is_open()){
+        if (!file.is_open())
+        {
             cout << "Error opening the file!" << endl;
             return;
         }
 
         string line;
-        while(getline(file,line)){
+        getline(file, line);
+        while (getline(file, line))
+        {
             Question question = Question::loadFromFile(line);
-            Questions[question.getID()] = question;
-            questions_list.push_back(question);
+            questions[question.getId()] = question;
+
+            if (question.getId() > last_question_id)
+            {
+                last_question_id = question.getId();
+            }
         }
 
         file.close();
     }
 
-    void displayQuiz(){
+    void displayQuiz()
+    {
         cout << "Quiz: " << title << endl;
-        for(const auto& question: questions_list){
-            question.display();
+        for (const auto &entry : questions)
+        {
+            entry.second.display();
         }
     }
 
-    void removeQuestion(int question_id){
-        if(questions.find(question_id) != questions.end()){
-            questions.erase(question_id);
-            
-            for(auto it = questions_list.begin(); it != questions_list.end(); ++it){
-                if(it->getID() == question_id){
-                    questions_list.erase(it);
-                    break;
-                }
-            }
-        }
+    unordered_map<int, Question> getQuestions() const
+    {
+        return questions;
     }
 
-    void updateQuestion(Question& question){
-        questions[question.getId()] = question;
-        for(auto& q: questions_list){
-            if(q.getId() == question.getId()){
-                q = question;
-                break;
-            }
-        }
-    }
-
-    vector<Question> getRandomQuestions(string& category, Difficulty difficulty, int num_questions){
+    vector<Question> getRandomQuestions(string &category, Difficulty difficulty, int num_questions)
+    {
         vector<Question> filtered_questions;
 
-        for(const auto& entry: questions){
-            const Question& q = entry.second;
-            if(q.hasCategory(category) && q.getDifficulty() == difficulty){
+        for (const auto &entry : questions)
+        {
+            const Question &q = entry.second;
+            if (q.hasCategory(category) && q.getDifficulty() == difficulty)
+            {
                 filtered_questions.push_back(q);
             }
         }
 
-        srand(time(0));
-        random_shuffle(filtered_questions.begin(), filtered_questions.end());
+        shuffle(filtered_questions.begin(), filtered_questions.end(), default_random_engine(time(0)));
 
-        if(num_questions > filtered_questions.size()){
+        if (num_questions > filtered_questions.size())
+        {
             num_questions = filtered_questions.size();
         }
 
         return vector<Question>(filtered_questions.begin(), filtered_questions.begin() + num_questions);
-        
     }
-
 };
