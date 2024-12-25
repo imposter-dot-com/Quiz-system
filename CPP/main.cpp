@@ -3,11 +3,10 @@
 #include <fstream>
 #include <string>
 #include <sstream>
+#include "quiz-question.h"
 #include "admin.cpp"
 #include "mainFunction.cpp"
 using namespace std;
-
-
 
 int main(int argc, char const *argv[])
 {
@@ -18,19 +17,19 @@ int main(int argc, char const *argv[])
 
         mainMenu:
         clearTerminal();
-        cout << "Welcome to Quiz's system";
+        cout << "Welcome to Quiz's system\n";
         cout << "--- Choose Option Mode ---\n" << endl;
         cout << "1. Admin" << endl;
         cout << "2. User" << endl;
         cout << "3. Exit\n" << endl;
         cout << "Enter here: ";
         cin >> mainOptionMode;
+
         if(mainOptionMode == 1)
         {
             clearTerminal();
             while (true)
             {
-                //Get admin name
                 string mainPassword;
                 Admin *admin = new Admin();
                 clearTerminal();
@@ -38,178 +37,111 @@ int main(int argc, char const *argv[])
                 cout << "Enter the password: ";
                 cin >> mainPassword;
 
-                // remove the end character of mainPassword
                 bool isCorrect = admin->checkMainPassowrd(mainPassword);
-                if (isCorrect == true)
+                if (isCorrect)
                 {
                     fflush(stdin);
                     clearTerminal();
-                    cout << "*** Access Granted ***";
+                    cout << "*** Access Granted ***\n";
                     sleep(1.5);
-                    string adminFileName = "../CSV-Files/admin.csv";
-                    fstream adminFile;
-                    if(admin->gatherAdminFile(adminFile, adminFileName) == false)
-                    {
-                        cout << "Can't Open File";
-                        sleep(1.5);
-                        break;
-                    }
+
+                    // Initialize quiz system
+                    Quiz mainQuiz(1, "Main Quiz"); // Create a default quiz
+                    string filename = "quiz_data.csv"; // File to store quiz data
+                    mainQuiz.loadFromFile(filename); // Load existing quiz data if any
+
                     while (true)
                     {
-                        // Choose an option
-                        // Gather all the info from admin file
-                        int adminMode;
+                        int adminOption;
                         clearTerminal();
-                        cout << "--- Please Choose an Option ---\n" << endl;
-                        cout << "1. Create a New Admin" << endl;
-                        cout << "2. Delete an Admin" << endl;
-                        cout << "3. Display All Admins" << endl;
-                        cout << "4. Log In" << endl;
-                        cout << "5. Back" << endl;
-                        cout << "6. Exit\n" << endl;
+                        cout << "*** Welcome Admin ***\n" << endl;
+                        cout << "=== Please choose an option ===\n" << endl;
+                        cout << "1. Create Quiz Question" << endl;
+                        cout << "2. Delete Quiz Question" << endl;
+                        cout << "3. Update Quiz Title" << endl;
+                        cout << "4. Display All Questions" << endl;
+                        cout << "5. Back to Main Menu\n" << endl;
                         cout << "Enter here: ";
-                        cin >> adminMode;
+                        cin >> adminOption;
 
-                        // Create a new admin
-                        if(adminMode == 1)
-                        {
-                            
-                            while (true)
-                            {
-                                /* code */
-                                string newAdminName;
-                                int tempID;
-                                clearTerminal();
-                                cout << "--- Creating a new Admin ---\n" << endl;
-                                cout << "Enter your name: ";
-                                cin >> newAdminName;
-                                if(admin->checkName(newAdminName) == false)
-                                {
-                                    int tempID = admin->getNextAvailableID();
-                                    string strTempID = to_string(tempID);
-                                    string newAdminPassword;
-                                    // enter password
-                                    clearTerminal();
-                                    cout << "--- Creating a new Admin ---\n" << endl;
-                                    cout << "Enter your password: ";
-                                    cin >> newAdminPassword;
+                        switch(adminOption) {
+                            case 1: {
+                                // Create new question
+                                string questionText, category;
+                                vector<string> options;
+                                vector<string> categories;
+                                int correctAnswer;
+                                string difficultyStr;
 
-                                    // Add the entered element in the linked list
-                                    admin->insertEnd(strTempID, newAdminName, newAdminPassword);
-                                    
-                                    // Add the the info to the file
-                                    admin->addNewAdmin(adminFile, adminFileName, strTempID, newAdminName, newAdminPassword);
-                                    adminFile.close();
-                                    clearTerminal();
-                                    cout << "*** New admin have been created successfully ***";
-                                    sleep(1.5);
-                                    break;
+                                cin.ignore();
+                                cout << "Enter question text: ";
+                                getline(cin, questionText);
+
+                                cout << "Enter category: ";
+                                getline(cin, category);
+                                categories.push_back(category);
+
+                                cout << "Enter 4 options:\n";
+                                for(int i = 0; i < 4; i++) {
+                                    string option;
+                                    cout << "Option " << (i+1) << ": ";
+                                    getline(cin, option);
+                                    options.push_back(option);
                                 }
-                                
-                                else
-                                {
-                                    cout << "Name Already Taken!" << endl;
-                                    sleep(2);
-                                }
+
+                                cout << "Enter correct answer (1-4): ";
+                                cin >> correctAnswer;
+
+                                cout << "Enter difficulty (BEGINNER/INTERMEDIATE/ADVANCED): ";
+                                cin >> difficultyStr;
+
+                                Question newQuestion(0, questionText, options, categories, 
+                                                   correctAnswer, stringToDifficulty(difficultyStr));
+                                mainQuiz.addQuestion(newQuestion);
+                                mainQuiz.saveToFile(filename);
+                                cout << "Question added successfully!\n";
+                                pause();
+                                break;
                             }
-
-                        }
-
-                        // Delete an admin
-                        else if (adminMode == 2)
-                        {
-                            while (true)
-                            {
-                                
-                                string delAdminID;
-                                string delAdminPassword;
-                                clearTerminal();
-                                cout << "--- Deleting an Admin ---\n" << endl;
-                                cout << "Enter the admin ID: ";
-                                cin >> delAdminID;
-                                if(admin->checkAdminID(delAdminID) == true)
-                                {
-                                    clearTerminal();
-                                    cout << "--- Deleting an Admin ---\n" << endl;
-                                    cout << "Enter the admin password: ";
-                                    cin >> delAdminPassword;
-                                    if(admin->checkAdminPassword(delAdminID, delAdminPassword) == true)
-                                    {
-                                        while(true)
-                                        {
-                                            int delOption;
-                                            clearTerminal();
-                                            cout << "Are you sure to delete this admin?" << endl;
-                                            cout << "1. Yes" << endl;
-                                            cout << "2. No" << endl;
-                                            cout << "Enter here: ";
-                                            cin >> delOption;
-                                            if(delOption == 1)
-                                            {
-                                                admin->removeAdminFromFile(delAdminID);
-                                                sleep(4);
-                                                break;
-                                            }
-                                            else if (delOption == 2)
-                                            {
-                                                break;
-                                            }
-                                            else
-                                            {
-                                                cout << "Wrong Input!!" << endl;
-                                                sleep(2);
-                                            }
-                                        }
-                                    }
-                                    else
-                                    {
-                                        cout << "Wrong Password!!" << endl;
-                                        sleep(2);
-                                        break;
-                                    }
-                                    break;
-                                }
-                                else
-                                {
-                                    clearTerminal();
-                                    cout << "ID is not in the file" << endl;
-                                    sleep(2);
-                                    break;
-                                }
+                            case 2: {
+                                // Delete question
+                                int questionId;
+                                mainQuiz.displayQuiz();
+                                cout << "\nEnter question ID to delete: ";
+                                cin >> questionId;
+                                mainQuiz.removeQuestion(questionId);
+                                mainQuiz.saveToFile(filename);
+                                cout << "Question deleted successfully!\n";
+                                pause();
+                                break;
                             }
-                            
+                            case 3: {
+                                // Update quiz title
+                                string newTitle;
+                                cout << "Enter new quiz title: ";
+                                cin.ignore();
+                                getline(cin, newTitle);
+                                mainQuiz = Quiz(1, newTitle); // Create new quiz with updated title
+                                mainQuiz.saveToFile(filename);
+                                cout << "Quiz title updated successfully!\n";
+                                pause();
+                                break;
+                            }
+                            case 4: {
+                                // Display all questions
+                                clearTerminal();
+                                cout << "=== All Quiz Questions ===\n\n";
+                                mainQuiz.displayQuiz();
+                                pause();
+                                break;
+                            }
+                            case 5:
+                                goto mainMenu;
+                            default:
+                                cout << "Invalid option!\n";
+                                pause();
                         }
-                        else if (adminMode == 3)
-                        {
-                            clearTerminal();
-                            cout << "--- Display All Admins ---" << endl;
-                            admin->displayAdmin();
-                            pause();
-                        }
-                        else if (adminMode == 4)
-                        {
-                            
-                        }
-                        else if(adminMode == 5)
-                        {
-                            clearTerminal();
-                            cout << "*** Exit Admin Mode ***";
-                            sleep(2);
-                            goto mainMenu;
-                        }
-                        else if (adminMode == 6)
-                        {
-                            return 0;
-                        }
-                        else
-                        {
-                            cout << "Invalid option!!" << endl;
-                            pause();
-                        }
-                        
-
                     }
-                    
                 }
                 else
                 {
@@ -217,15 +149,18 @@ int main(int argc, char const *argv[])
                     pause();
                     break;
                 }
-                
+                delete admin;
             }
         }
         else if (mainOptionMode == 2)
         {
-            /* code */
+            // User mode implementation here
+            cout << "User mode not implemented yet.\n";
+            pause();
         }
         else if (mainOptionMode == 3)
         {
+            cout << "Thank you for using the Quiz System!\n";
             break;
         }
         else

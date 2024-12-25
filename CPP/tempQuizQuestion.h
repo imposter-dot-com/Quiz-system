@@ -1,3 +1,6 @@
+#ifndef QUIZ_QUESTION_H
+#define QUIZ_QUESTION_H
+
 #include<iostream>
 #include<fstream>
 #include<sstream>
@@ -8,7 +11,6 @@
 #include<algorithm>
 #include<ctime>
 #include<set>
-#include<ctime>
 #include<random>
 
 
@@ -29,19 +31,18 @@ string difficultyToString(Difficulty difficulty){
     }
 }
 
-
-    Difficulty stringToDifficulty(const string& str){
-        if(str == "BEGINNER"){
-            return BEGINNER;
-        }
-        if(str == "INTERMEDIATE"){
-            return INTERMEDIATE;
-        }
-        if(str == "ADVANCED"){
-            return ADVANCED;
-        }
+Difficulty stringToDifficulty(const string& str){
+    if(str == "BEGINNER"){
         return BEGINNER;
     }
+    if(str == "INTERMEDIATE"){
+        return INTERMEDIATE;
+    }
+    if(str == "ADVANCED"){
+        return ADVANCED;
+    }
+    return BEGINNER;
+}
 
 class Question{
     private:
@@ -64,11 +65,9 @@ class Question{
     Difficulty getDifficulty() const{return difficulty;}
     vector<string> getCategory() const{return category;}
 
-
     bool hasCategory(const string& cat) const {
         return find(category.begin(), category.end(), cat) != category.end();
     }
-
 
     void feedback(int user_answers) const{
         if(user_answers == correct_answer){
@@ -126,8 +125,7 @@ class Question{
     }
 
     return Question(id, question_text, options, categories, correct_answer, difficulty);
-}
-    
+    }
 };
 
 class Quiz{
@@ -137,7 +135,6 @@ class Quiz{
     unordered_map <int, Question> questions;
     int last_question_id=0;
     set<int> available_ids;
-
 
     public:
     Quiz(int quiz_id, const string& title) : quiz_id(quiz_id), title(title) {}
@@ -200,7 +197,6 @@ class Quiz{
         while (getline(file, line)) {
             Question question = Question::loadFromFile(line);
             questions[question.getId()] = question;
-
             
             if (question.getId() > last_question_id) {
                 last_question_id = question.getId();
@@ -238,7 +234,7 @@ class Quiz{
         }
 
         return vector<Question>(filtered_questions.begin(), filtered_questions.begin() + num_questions);
-        
     }
-
 };
+
+#endif // QUIZ_QUESTION_H
