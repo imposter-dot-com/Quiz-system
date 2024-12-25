@@ -3,8 +3,8 @@
 #include <fstream>
 #include <string>
 #include <sstream>
-#include "quiz-question.h"
-#include "adminAccount.h"
+// #include "quiz-question.h"
+#include "admin.cpp"
 #include "mainFunction.cpp"
 using namespace std;
 
