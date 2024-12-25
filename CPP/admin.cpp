@@ -17,11 +17,11 @@ struct Box
 class Admin
 {
     private:
-        string mainPassowrd = "168168";
+        string mainPassword = "168168";
     public:
         Box *head, *tail;
         int size;
-        Quiz quiz;
+        Quiz quiz = Quiz(0, "Default Quiz");
         Admin() // defalt value
         {
             head = NULL;
@@ -72,7 +72,7 @@ class Admin
         int getNextAvailableID()
         {
             Box *t = head;
-            bool foundIDs[size + 1] = {false}; // Array to track used IDs (1-based indexing)
+            vector<bool> foundIDs(size + 1, false);  // Array to track used IDs (1-based indexing)
             int tempID;
 
             // Mark the IDs that are already in use
@@ -154,39 +154,33 @@ class Admin
 // Check Name
         bool checkName(string TempAdminName)
         {
-            Box *name;
-            name = head;
-            for(int i = 0; i < size; i++)
+            Box *name = head;
+            for (int i = 0; i < size; i++)
             {
-                if(TempAdminName == name->adminName)
+                if (TempAdminName == name->adminName)
                 {
                     return true;
-                }
-                if(i == size -1 && TempAdminName != name->adminName)
-                {
-                    return false;
                 }
                 name = name->next;
             }
+            return false; // Default return if no match is found
         }
+
 
         bool checkAdminID(string TempAdminID)
         {
-            Box *id;
-            id = head;
-            for(int i = 0; i < size; i++)
+            Box *id = head;
+            while (id != NULL)
             {
-                if(TempAdminID == id->adminID)
+                if (TempAdminID == id->adminID)
                 {
                     return true;
                 }
-                if(i == size -1 && TempAdminID != id->adminName)
-                {
-                    return false;
-                }
                 id = id->next;
             }
+            return false; // Default return
         }
+
     // Check Admin Password
     bool checkAdminPassword(string ID, string password)
     {
@@ -211,7 +205,7 @@ class Admin
     }
 // Check Main Password
         bool checkMainPassowrd(string &inputMainPassword){
-            if(mainPassowrd == inputMainPassword)
+            if(mainPassword == inputMainPassword)
             {
                 return true;
             }
@@ -374,15 +368,15 @@ void removeAdmin(string adminID)
     
     void updateQuestion(string& filename, int question_id, string newQuestion_text, vector<string> newOptions, vector<string> newCategories, int newCorrect_answer, Difficulty newDifficulty){
         Question updatedQuestion(question_id, newQuestion_text, newOptions, newCategories, newCorrect_answer, newDifficulty); 
-        quiz.updatedQuestion(updatedQuestion);
+        quiz.updateQuestion(updatedQuestion);
 
         ofstream file(filename, ios::trunc);
             if(!file.is_open()){
                 cout<<"Error opening the file."<<endl;
                 return;
             }
-        for(const auto& question: quiz.getQuestion()){
-            question.saveToFile(file);
+        for (const auto& question : quiz.getQuestions()) {
+            question.second.SaveToFile(file);
         }
         file.close();
         cout<<"Question has been successfully updated."<<endl;
@@ -397,9 +391,10 @@ void removeAdmin(string adminID)
                 return;
             }
 
-            for(const auto& question: quiz.getQuestion()){
-                question.SaveToFile(file);
-            }
+for (const auto& question : quiz.getQuestions()) {
+    question.second.SaveToFile(file);
+}
+
             file.close();
             cout <<"Question has been successfully deleted."<<endl;
     }
@@ -418,6 +413,14 @@ void removeAdmin(string adminID)
             cout<<endl;
        }
     }
+
+~Admin() {
+    while (head != NULL) {
+        Box *temp = head;
+        head = head->next;
+        delete temp;
+    }
+}
 
 };
 

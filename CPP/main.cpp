@@ -8,8 +8,6 @@
 #include "mainFunction.cpp"
 using namespace std;
 
-
-
 int main(int argc, char const *argv[])
 {
     while (true)
@@ -19,19 +17,19 @@ int main(int argc, char const *argv[])
 
         mainMenu:
         clearTerminal();
-        cout << "Welcome to Quiz's system";
+        cout << "Welcome to Quiz's system\n";
         cout << "--- Choose Option Mode ---\n" << endl;
         cout << "1. Admin" << endl;
         cout << "2. User" << endl;
         cout << "3. Exit\n" << endl;
         cout << "Enter here: ";
         cin >> mainOptionMode;
+
         if(mainOptionMode == 1)
         {
             clearTerminal();
             while (true)
             {
-                //Get admin name
                 string mainPassword;
                 Admin *admin = new Admin();
                 clearTerminal();
@@ -39,173 +37,111 @@ int main(int argc, char const *argv[])
                 cout << "Enter the password: ";
                 cin >> mainPassword;
 
-                // remove the end character of mainPassword
                 bool isCorrect = admin->checkMainPassowrd(mainPassword);
-                if (isCorrect == true)
+                if (isCorrect)
                 {
                     fflush(stdin);
                     clearTerminal();
-                    cout << "*** Access Granted ***";
+                    cout << "*** Access Granted ***\n";
                     sleep(1.5);
-                while (true)
+
+                    // Initialize quiz system
+                    Quiz mainQuiz(1, "Main Quiz"); // Create a default quiz
+                    string filename = "quiz_data.csv"; // File to store quiz data
+                    mainQuiz.loadFromFile(filename); // Load existing quiz data if any
+
+                    while (true)
                     {
-                        int loginOption;
+                        int adminOption;
                         clearTerminal();
-                        cout << "*** Welcome ***\n"  << endl;
+                        cout << "*** Welcome Admin ***\n" << endl;
                         cout << "=== Please choose an option ===\n" << endl;
-                        cout << "1. Create Quiz" << endl;
-                        cout << "2. Delete Quiz" << endl;
-                        cout << "3. Update Quiz" << endl;
-                        cout << "4. Back\n" << endl;
+                        cout << "1. Create Quiz Question" << endl;
+                        cout << "2. Delete Quiz Question" << endl;
+                        cout << "3. Update Quiz Title" << endl;
+                        cout << "4. Display All Questions" << endl;
+                        cout << "5. Back to Main Menu\n" << endl;
                         cout << "Enter here: ";
-                        cin >> loginOption;
-                        if (loginOption == 1)
-                        {
-                            // Create Quiz
-                            clearTerminal();
-                            int quizID;
-                            string quizTitle;
-                            cout << "--- Create Quiz ---\n" << endl;
-                            cout << "Enter Quiz ID: ";
-                            cin >> quizID;
-                            cout << "Enter Quiz Title: ";
-                            cin.ignore();
-                            getline(cin, quizTitle);
+                        cin >> adminOption;
 
-                            Quiz quiz(quizID, quizTitle);
-
-                            int numQuestions;
-                            cout << "How many questions do you want to add? ";
-                            cin >> numQuestions;
-
-                            for (int i = 0; i < numQuestions; i++)
-                            {
-                                clearTerminal();
-                                cout << "--- Add Question " << (i + 1) << " ---\n" << endl;
-                                int questionID;
-                                string questionText;
-                                int correctAnswer;
+                        switch(adminOption) {
+                            case 1: {
+                                // Create new question
+                                string questionText, category;
                                 vector<string> options;
                                 vector<string> categories;
-                                string tempOption;
+                                int correctAnswer;
+                                string difficultyStr;
 
-                                cout << "Enter Question ID: ";
-                                cin >> questionID;
                                 cin.ignore();
-                                cout << "Enter Question Text: ";
+                                cout << "Enter question text: ";
                                 getline(cin, questionText);
 
-                                for (int j = 0; j < 4; j++)
-                                {
-                                    cout << "Enter Option " << (j + 1) << ": ";
-                                    getline(cin, tempOption);
-                                    options.push_back(tempOption);
-                                }
-
-                                cout << "Enter the number of the correct option (1-4): ";
-                                cin >> correctAnswer;
-
-                                cin.ignore();
-                                string category;
-                                cout << "Enter Question Category: ";
+                                cout << "Enter category: ";
                                 getline(cin, category);
                                 categories.push_back(category);
 
-                                int difficultyInput;
-                                cout << "Select Difficulty (1 = BEGINNER, 2 = INTERMEDIATE, 3 = ADVANCED): ";
-                                cin >> difficultyInput;
-                                Difficulty difficulty = static_cast<Difficulty>(difficultyInput - 1);
+                                cout << "Enter 4 options:\n";
+                                for(int i = 0; i < 4; i++) {
+                                    string option;
+                                    cout << "Option " << (i+1) << ": ";
+                                    getline(cin, option);
+                                    options.push_back(option);
+                                }
 
-                                Question question(questionID, questionText, options, categories, correctAnswer - 1, difficulty);
-                                quiz.addQuestion(question);
+                                cout << "Enter correct answer (1-4): ";
+                                cin >> correctAnswer;
+
+                                cout << "Enter difficulty (BEGINNER/INTERMEDIATE/ADVANCED): ";
+                                cin >> difficultyStr;
+
+                                Question newQuestion(0, questionText, options, categories, 
+                                                   correctAnswer, stringToDifficulty(difficultyStr));
+                                mainQuiz.addQuestion(newQuestion);
+                                mainQuiz.saveToFile(filename);
+                                cout << "Question added successfully!\n";
+                                pause();
+                                break;
                             }
-
-                            string filename = "../CSV-Files/quiz_" + to_string(quizID) + ".csv";
-                            quiz.saveToFile(filename);
-                            cout << "\nQuiz created and saved successfully." << endl;
-                            pause();
-                        }
-                        else if (loginOption == 2)
-                        {
-                            // Delete Quiz
-                            clearTerminal();
-                            int quizID;
-                            cout << "--- Delete Quiz ---\n" << endl;
-                            cout << "Enter Quiz ID: ";
-                            cin >> quizID;
-                            string filename = "../CSV-Files/quiz_" + to_string(quizID) + ".csv";
-                            if (remove(filename.c_str()) == 0)
-                            {
-                                cout << "Quiz deleted successfully." << endl;
+                            case 2: {
+                                // Delete question
+                                int questionId;
+                                mainQuiz.displayQuiz();
+                                cout << "\nEnter question ID to delete: ";
+                                cin >> questionId;
+                                mainQuiz.removeQuestion(questionId);
+                                mainQuiz.saveToFile(filename);
+                                cout << "Question deleted successfully!\n";
+                                pause();
+                                break;
                             }
-                            else
-                            {
-                                cout << "Error: Quiz not found." << endl;
+                            case 3: {
+                                // Update quiz title
+                                string newTitle;
+                                cout << "Enter new quiz title: ";
+                                cin.ignore();
+                                getline(cin, newTitle);
+                                mainQuiz = Quiz(1, newTitle); // Create new quiz with updated title
+                                mainQuiz.saveToFile(filename);
+                                cout << "Quiz title updated successfully!\n";
+                                pause();
+                                break;
                             }
-                            pause();
+                            case 4: {
+                                // Display all questions
+                                clearTerminal();
+                                cout << "=== All Quiz Questions ===\n\n";
+                                mainQuiz.displayQuiz();
+                                pause();
+                                break;
+                            }
+                            case 5:
+                                goto mainMenu;
+                            default:
+                                cout << "Invalid option!\n";
+                                pause();
                         }
-                        else if (loginOption == 3)
-                        {
-                            // // Update Quiz
-                            // clearTerminal();
-                            // int quizID;
-                            // cout << "--- Update Quiz ---\n" << endl;
-                            // cout << "Enter Quiz ID: ";
-                            // cin >> quizID;
-                            // string filename = "../CSV-Files/quiz_" + to_string(quizID) + ".csv";
-
-                            // Quiz quiz(quizID, "");
-                            // quiz.loadFromFile(filename);
-
-                            // int questionID;
-                            // cout << "Enter Question ID to update: ";
-                            // cin >> questionID;
-
-                            // for (auto& question : quiz.getRandomQuestions("", BEGINNER, quiz.getQuestions().size()))
-                            // {
-                            //     if (question.getId() == questionID)
-                            //     {
-                            //         clearTerminal();
-                            //         cout << "--- Update Question ---\n" << endl;
-                            //         int correctAnswer;
-                            //         vector<string> options;
-                            //         string tempOption;
-
-                            //         cin.ignore();
-                            //         cout << "Enter updated Question Text: ";
-                            //         getline(cin, question.getQuestionText());
-
-                            //         for (int j = 0; j < 4; j++)
-                            //         {
-                            //             cout << "Enter updated Option " << (j + 1) << ": ";
-                            //             getline(cin, tempOption);
-                            //             options.push_back(tempOption);
-                            //         }
-
-                            //         cout << "Enter the updated number of the correct option (1-4): ";
-                            //         cin >> correctAnswer;
-                            //         question.getCorrectAnswer() = correctAnswer - 1;
-
-                            //         quiz.updateQuestion(question);
-                            //         quiz.saveToFile(filename);
-
-                            //         cout << "Question updated successfully." << endl;
-                            //         pause();
-                            //         break;
-                            //     }
-                            // }
-                        }                                            
-                        else if (loginOption == 4)
-                        {
-                            break;
-                        }
-                        else
-                        {
-                            cout << "Wrong Input!!" << endl;
-                            sleep(2);
-                        }
-                    }                    
-                    
+                    }
                 }
                 else
                 {
@@ -213,15 +149,18 @@ int main(int argc, char const *argv[])
                     pause();
                     break;
                 }
-                
+                delete admin;
             }
         }
         else if (mainOptionMode == 2)
         {
-            /* code */
+            // User mode implementation here
+            cout << "User mode not implemented yet.\n";
+            pause();
         }
         else if (mainOptionMode == 3)
         {
+            cout << "Thank you for using the Quiz System!\n";
             break;
         }
         else
