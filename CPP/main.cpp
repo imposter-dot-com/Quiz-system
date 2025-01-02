@@ -3,8 +3,7 @@
 #include <fstream>
 #include <string>
 #include <sstream>
-// #include "quiz-question.h"
-#include "admin.cpp"
+#include "adminAccount.h"
 #include "mainFunction.cpp"
 using namespace std;
 
@@ -31,7 +30,7 @@ int main(int argc, char const *argv[])
             while (true)
             {
                 string mainPassword;
-                Admin *admin = new Admin();
+                AdminAccount *admin = new Admin();
                 clearTerminal();
                 cout << "--- Security Check ---\n" << endl;
                 cout << "Enter the password: ";
