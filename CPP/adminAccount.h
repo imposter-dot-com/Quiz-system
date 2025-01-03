@@ -11,11 +11,12 @@ using namespace std;
 class AdminAccount{
     private:
     string username, email, passwd, passwd_1;
+
     public:
     inline void createAdminAccount() {
     fstream file;
     string u;
-    file.open("CSV-Files/admin.csv", ios::out);
+    file.open("../CSV-Files/admin.csv", ios::out);
     cout << "Enter your username: ";
     cin >> u;
     file << "Username: " << u << "\n";
@@ -64,13 +65,13 @@ inline void login() {
   fstream file;
   string userData, passwdData;
   int choice;
-  file.open("DataBasefiles/adminAccount.csv", ios::in);
-
-  // handling no file case
+  file.open("../CSV-Files/admin.csv", ios::in);
   if (!file.is_open()) {
-    cout << "Error: no user datafound. Please create an account";
-    exit(0);
+      cout << "Error: Could not open file for reading." << endl;
+      exit(1);
   }
+
+
   bool foundUser,
       foundPasswd; // boolean to check if user exists / if passwd is correct
 
@@ -144,7 +145,7 @@ inline void forgotPassword() {
     cout << "Your OTP has been sent. Please check your file for the OTP." << endl;
 
     // Write OTP to a file
-    file.open("DataBasefiles/OTP.csv", ios::out);
+    file.open("../CSV-Files/OTP.csv", ios::out);
     file << OTP; // Save the OTP in the file
     file.close();
 
@@ -154,7 +155,7 @@ inline void forgotPassword() {
 
     // Read the OTP from the file for verification
     string storedOTP;
-    file.open("DataBasefiles/OTP.csv", ios::in);
+    file.open("../CSV-Files/OTP.csv", ios::in);
     if (file.is_open()) {
         getline(file, storedOTP); // Read the OTP from the file
         file.close();
@@ -180,7 +181,7 @@ inline void forgotPassword() {
 
         if (newPasswd == newPasswd_1) {
             // Open the account file to read existing data
-            fstream readFile("DataBasefiles/adminAccount.csv", ios::in);
+            fstream readFile("../CSV-Files/admin.csv", ios::in);
             string line;
             string updatedData;
             bool usernameFound = false;
@@ -205,7 +206,7 @@ inline void forgotPassword() {
             }
 
             // Write the updated data back to the file
-            fstream writeFile("DataBasefiles/adminAccount.csv", ios::out | ios::trunc);
+            fstream writeFile("../CSV-Files/admin.csv", ios::out | ios::trunc);
             writeFile << updatedData;
             writeFile.close();
 
@@ -221,7 +222,7 @@ inline void changePassword() {
     int choice;
     string newPasswd, newPasswd_1, passwdData;
     bool foundPasswd;
-    file.open("DataBasefiles/adminAccount.csv", ios::in);
+    file.open("../CSV-Files/admin.csv", ios::in);
     // Update password
     retry:
   cout << "Enter your current password: ";
@@ -259,7 +260,7 @@ inline void changePassword() {
 
         if (newPasswd == newPasswd_1) {
             // Open the account file to read existing data
-            fstream readFile("DataBasefiles/adminAccount.csv", ios::in);
+            fstream readFile("../CSV-Files/admin.csv", ios::in);
             string line;
             string updatedData;
             bool usernameFound = false;
@@ -283,7 +284,7 @@ inline void changePassword() {
             }
 
             // Write the updated data back to the file
-            fstream writeFile("DataBasefiles/adminAccount.csv", ios::out | ios::trunc);
+            fstream writeFile("../CSV-Files/admin.csv", ios::out | ios::trunc);
             writeFile << updatedData;
             writeFile.close();
 
