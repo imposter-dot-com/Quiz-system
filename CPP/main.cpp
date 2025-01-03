@@ -1,125 +1,166 @@
 #include <iostream>
 #include <unistd.h>
 #include <fstream>
-#include "admin.cpp"
-#include "mainFunction.cpp"
+#include <string>
+#include <sstream>
+#include <vector>
+#include <cstdlib>
+#include <limits>
+#include "adminAccount.h"
+#include "quiz-question.h" 
+#include "user.h"
+
 using namespace std;
 
+void clearTerminal() {
+    #ifdef _WIN32
+        system("cls");
+    #else
+        system("clear");
+    #endif
+}
 
 
-int main(int argc, char const *argv[])
-{
-    while (true)
-    {
-        int optionMode = 0;
-        int isTrue = false;
+int main(int argc, char const *argv[]) {
+    AdminAccount admin;
+    Quiz quiz;
+    User user;
+    string questionFile = "../CSV-Files/questions.csv";
+    string reportFile = "../CSV-Files/report.csv";
+    quiz.loadFromFile();
 
-        mainMenu:
+    while (true) {
+        int mainOptionMode = 0;
+
+        // Main Menu
         clearTerminal();
-        cout << "---Choose Option Mode---\n" << endl;
+        cout << "--- Choose Option Mode ---\n" << endl;
         cout << "1. Admin" << endl;
         cout << "2. User" << endl;
         cout << "3. Exit\n" << endl;
         cout << "Enter here: ";
-        cin >> optionMode;
-        if(optionMode == 1)
-        {
+        cin >> mainOptionMode;
+
+        if (mainOptionMode == 1) {
             clearTerminal();
-            while (true)
-            {
-                //Get admin name
-                string mainPassword;
-                Admin *admin = new Admin();
+
+            cout << "--- Admin Login ---\n" << endl;
+            admin.login();
+
+            while (true) {
+                int adminOption = 0;
                 clearTerminal();
-                cout << "---Security Check---\n" << endl;
-                cout << "Enter the password: ";
-                cin >> mainPassword;
+                cout << "--- Admin Page ---\n" << endl;
+                cout << "1. Create New Admin Account" << endl;
+                cout << "2. Change Password" << endl;
+                cout << "3. Manage Questions" << endl;
+                cout << "4. View User Reports" << endl;
+                cout << "5. Back to Main Menu" << endl;
+                cout << "6. Exit\n" << endl;
+                cout << "Enter here: ";
+                cin >> adminOption;
+                cin.ignore(numeric_limits<streamsize>::max(), '\n'); 
 
-                // remove the end character of mainPassword
-                mainPassword.pop_back(); 
-                bool isCorrect = admin->checkMainPassowrd(mainPassword);
-                if (isCorrect == true)
-                {
-                    clearTerminal();
-                    cout << "*** Access Granted ***";
-                    sleep(2);
-                    while (true)
-                    {
-                        // Choose an option
-                        string adminFileName = "admin.csv";
-                        fstream adminFile;
-                        int adminMode;
+                switch (adminOption) {
+                    case 1:
+                        admin.createAdminAccount();
+                        break;
+                    case 2:
+                        admin.changePassword();
+                        break;
+                    case 3: {
+                        int questionOption = 0;
                         clearTerminal();
-                        cout << "---Please Choose an Option---\n" << endl;
-                        cout << "1. Create New Admin" << endl;
-                        cout << "2. Log In" << endl;
-                        cout << "3. Delete an Admin" << endl;
-                        cout << "4. Back" << endl;
-                        cout << "5. Exit\n" << endl;
+                        cout << "--- Manage Questions ---\n" << endl;
+                        cout << "1. Create Question" << endl;
+                        cout << "2. Delete Question" << endl;
+                        cout << "3. View All Questions" << endl;
+                        cout << "4. Update Question" << endl;
+                        cout << "5. Back\n" << endl;
                         cout << "Enter here: ";
-                        cin >> adminMode;
+                        cin >> questionOption;
 
-                        if(adminMode == 1)
-                        {
+                        switch (questionOption) {
+                            case 1: {
+                                // Add a new question
+                                Question question = quiz.createQuestionInteractively();
+                                quiz.addQuestion(question);
+                                cout << "Question added successfully!\n";
+                                break;
+                            }
+                            case 2: {
+                                // Delete a question
+                                int questionID;
+                                cout << "Enter the Question ID to delete: ";
+                                cin >> questionID;
+                                quiz.removeQuestion(questionID);
+                                break;
+                            }
+                            case 3: {
+                                // View all questions
+                                quiz.displayAllQuestions(questionFile);
+                                
+                                cout << "Press Enter to return to the Manage Questions menu..." << endl;
+                                cin.ignore(numeric_limits<streamsize>::max(), '\n'); // Clear the input buffer
+                                cin.get(); // Wait for user to press Enter
+                                break;
+                            }
+                            case 4: {
+                                // Update a question
+                                while (true) {
+                                    int questionID;
+                                    cout << "Enter the Question ID to update (or enter -1 to go back): ";
+                                    cin >> questionID;
 
-                        }
-                        else if (adminMode == 2)
-                        {
+                                    if (questionID == -1) {
+                                        break; // Exit the loop and go back to the menu
+                                    }
 
-                        }
-                        else if (adminMode == 3)
-                        {
-                            
-                        }
-                        else if(adminMode == 4)
-                        {
-                            goto mainMenu;
-                        }
-                        else if (adminMode == 5)
-                        {
-                            return 0;
-                        }
-                        else
-                        {
-                            cout << "Invalid option!!" << endl;
-                            cout << "Press ENTER to continue...";
-                            fflush(stdin);
-                            cin.get();
-                        }
-                        
+                                    if (!quiz.questionExists(questionID)) {
+                                        cout << "Question ID " << questionID << " does not exist. Please try again or enter -1 to go back." << endl;
+                                        continue; // Ask for the ID again
+                                    }
 
+                                    // If the ID exists, get the updated question details
+                                    Question updatedQuestion = quiz.createQuestionInteractively();
+                                    updatedQuestion.setId(questionID); // Use the same ID
+                                    quiz.updateQuestion(updatedQuestion);
+                                    break; // Exit the loop after a successful update
+                                }
+                                break;
+                            }
+                            case 5:
+                                break;
+                            default:
+                                cout << "Invalid option!\n";
+                        }
+                        break;
                     }
-                    
-                }
-                else
-                {
-                    cout << "Invalid Password" << endl;
-                    cout << "Press ENTER to continue...";
-                    fflush(stdin);
-                    cin.get();
+                    case 4:   
+                    user.displayReport();
                     break;
+                    case 5:
+                        goto mainMenu;
+                    case 6:
+                        cout << "Exiting program. Goodbye!\n";
+                        return 0;
+                    default:
+                        cout << "Invalid option! Please try again.\n";
                 }
-                
             }
-        }
-        else if (optionMode == 2)
-        {
-            /* code */
-        }
-        else if (optionMode == 3)
-        {
+        } else if (mainOptionMode == 2) {
+            clearTerminal();
+            userMenu();
+        } else if (mainOptionMode == 3) {
+            cout << "Thank you for using the system. Goodbye!\n";
             break;
-        }
-        else
-        {
-            cout << "Invalid option!!" << endl;
-            cout << "Press ENTER to continue...";
-            fflush(stdin);
-            cin.get();
+        } else {
+            cout << "Invalid option! Please try again.\n";
         }
     }
-    
 
+    return 0;
 
+mainMenu:
     return 0;
 }
