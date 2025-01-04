@@ -13,12 +13,12 @@ class AdminAccount{
     string username, email, passwd, passwd_1;
     public:
     inline void createAdminAccount() {
-  fstream file;
-  string u;
-  file.open("DataBasefiles/adminAccount.csv", ios::out);
-  cout << "Enter your username: ";
-  cin >> u;
-  file << "Username: " << u << "\n";
+    fstream file;
+    string u;
+    file.open("CSV-Files/admin.csv", ios::out);
+    cout << "Enter your username: ";
+    cin >> u;
+    file << "Username: " << u << "\n";
 
   do {
     if ((passwd.compare(passwd_1)) != 0) {
