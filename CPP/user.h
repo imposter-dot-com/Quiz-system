@@ -231,7 +231,7 @@ void createAccountUser() {
 
 
     void viewOwnHistory(const string& username) {
-    ifstream file("report.csv");
+    ifstream file("../CSV-Files/report.csv");
     if (!file.is_open()) {
         cout << "Error opening the file." << endl;
         return;
@@ -257,7 +257,7 @@ void createAccountUser() {
 }
 
    void viewLeaderboard() {
-    ifstream file("report.csv");
+    ifstream file("../CSV-Files/report.csv");
     if (!file.is_open()) {
         cout << "Error opening the file." << endl;
         return;
@@ -607,7 +607,7 @@ void startQuiz(string category, Difficulty difficulty) {
 void storeReport(const string& username, int score, double accuracy, Difficulty difficulty, const vector<string>& quiz_attempts) {
     static bool header_written = false; 
 
-    ofstream file("report.csv", ios::app);
+    ofstream file("../CSV-Files/report.csv", ios::app);
     if (!file.is_open()) {
         cout << "Error opening the report file." << endl;
         return;
