@@ -4,6 +4,7 @@
 #include<fstream>
 #include<sstream>
 #include<string>
+#include<iomanip>
 using namespace std;
 
 string current_username;
@@ -226,12 +227,12 @@ void createAccountUser() {
         }
         
         if (!swapped) break; 
+        }
     }
-}
 
 
     void viewOwnHistory(const string& username) {
-    ifstream file("report.csv");
+    ifstream file("../CSV-Files/report.csv");
     if (!file.is_open()) {
         cout << "Error opening the file." << endl;
         return;
@@ -239,113 +240,173 @@ void createAccountUser() {
 
     string line;
     bool foundUser = false;
-
-    getline(file, line); 
+    vector<string> allAttempts; // To store all attempts for the user
 
     while (getline(file, line)) {
-        if (line.find(username) != string::npos) {
-            cout << line << endl; 
-            foundUser = true;
+        string user, score_str, accuracy_str, difficulty_str, quiz_attempts;
+
+        if (line.find("User: ") != string::npos) {
+            istringstream iss(line);
+            iss.ignore(6); 
+            getline(iss, user);
+
+            getline(file, line);
+            if (line.find("Score: ") != string::npos) {
+                istringstream scoreStream(line);
+                scoreStream.ignore(7); 
+                getline(scoreStream, score_str); 
+            }
+
+            getline(file, line);
+            if (line.find("Accuracy: ") != string::npos) {
+                istringstream accuracyStream(line);
+                accuracyStream.ignore(10);
+                getline(accuracyStream, accuracy_str); 
+            }
+
+            getline(file, line);
+            if (line.find("Difficulty: ") != string::npos) {
+                istringstream difficultyStream(line);
+                difficultyStream.ignore(12); 
+                getline(difficultyStream, difficulty_str); 
+            }
+
+            getline(file,line);
+            getline(file, line); 
+            if (line.find("Quiz Attempt Details:") != string::npos) {
+                while (getline(file, line)) {
+                    if (line == "--------------------------------------------------") {
+                        break; 
+                    }
+                    quiz_attempts += line + "\n"; 
+                }
+            }
+
+            if (user == username) {
+                foundUser = true;
+                allAttempts.push_back("Score: " + score_str + "\n" +
+                                      "Accuracy: " + accuracy_str + "\n" +
+                                      "Difficulty: " + difficulty_str + "\n" +
+                                      "Quiz Attempts:\n" + quiz_attempts);
+            }
         }
     }
 
-    if (!foundUser) {
+    // Print all attempts for the user
+    if (foundUser) {
+        cout << "\n--- History for " << username << " ---\n";
+        for (const auto& attempt : allAttempts) {
+            cout << attempt << endl;
+        }
+    } else {
         cout << "No history found for user: " << username << endl;
     }
 
     file.close();
 }
 
-   void viewLeaderboard() {
-    ifstream file("report.csv");
-    if (!file.is_open()) {
-        cout << "Error opening the file." << endl;
-        return;
-    }
 
-    vector<userScore> leaderboard;
-    string line;
-
-    getline(file, line); 
-
-    while (getline(file, line)) {
-        string username;
-        int score;
-        double accuracy;
-        string difficulty_str;
-
-
-        stringstream ss(line);
-        getline(ss, username, ',');
-        ss >> score;
-        ss.ignore(); 
-        ss >> accuracy;
-        ss.ignore(); 
-        getline(ss, difficulty_str, ',');
-
-        Difficulty difficulty;
-        if (difficulty_str == "BEGINNER") {
-            difficulty = BEGINNER;
-        } else if (difficulty_str == "INTERMEDIATE") {
-            difficulty = INTERMEDIATE;
-        } else if (difficulty_str == "ADVANCED") {
-            difficulty = ADVANCED;
-        } else {
-            cout << "Invalid difficulty level: " << difficulty_str << endl;
-            continue; 
+    void viewLeaderboard() {
+        ifstream file("../CSV-Files/report.csv");
+        if (!file.is_open()) {
+            cout << "Error opening the file." << endl;
+            return;
         }
 
-        leaderboard.push_back({username, score, accuracy, difficulty});
-    }
+        vector<userScore> leaderboard;
+        string line;
 
-    file.close();
+        while (getline(file, line)) {
+            if (line.empty()) continue;  // Skip empty lines
 
-    
-    vector<userScore> beginner, intermediate, advanced;
+            string username;
+            int score = 0;
+            double accuracy = 0.0;
+            string difficulty_str;
 
-    for (const auto& entry : leaderboard) {
-        switch (entry.difficulty) {
-            case BEGINNER: beginner.push_back(entry); break;
-            case INTERMEDIATE: intermediate.push_back(entry); break;
-            case ADVANCED: advanced.push_back(entry); break;
+            // Check if the line starts with "User:"
+            if (line.find("User: ") == 0) {
+                username = line.substr(6);  // Extract username
+                
+                // Read the next lines for score, accuracy, and difficulty
+                getline(file, line); // Score line
+                if (line.find("Score: ") != string::npos) {
+                    stringstream scoreStream(line);
+                    string temp;
+                    scoreStream >> temp >> score;  // Extract score
+                }
+
+                getline(file, line); 
+                if (line.find("Accuracy: ") != string::npos) {
+                    stringstream accuracyStream(line);
+                    string temp;
+                    accuracyStream >> temp >> accuracy;  
+                    accuracyStream.ignore(numeric_limits<streamsize>::max(), '%'); 
+                }
+
+                getline(file, line);
+                if (line.find("Difficulty: ") != string::npos) {
+                    string temp;
+                    stringstream difficultyStream(line);
+                    difficultyStream >> temp >> difficulty_str;  
+                }
+
+                Difficulty difficulty;
+                if (difficulty_str == "BEGINNER") {
+                    difficulty = BEGINNER;
+                } else if (difficulty_str == "INTERMEDIATE") {
+                    difficulty = INTERMEDIATE;
+                } else if (difficulty_str == "ADVANCED") {
+                    difficulty = ADVANCED;
+                } else {
+                    cout << "Invalid difficulty level: " << difficulty_str << endl;
+                    continue;  
+                }
+
+                leaderboard.emplace_back(username, score, accuracy, difficulty);
+            }
         }
+
+        file.close();
+
+        // Separate leaderboard by difficulty
+        vector<userScore> beginner, intermediate, advanced;
+
+        for (const auto& entry : leaderboard) {
+            switch (entry.difficulty) {
+                case BEGINNER: beginner.push_back(entry); break;
+                case INTERMEDIATE: intermediate.push_back(entry); break;
+                case ADVANCED: advanced.push_back(entry); break;
+            }
+        }
+
+        // Sort each leaderboard using bubbleSort
+        bubbleSort(beginner);
+        bubbleSort(intermediate);
+        bubbleSort(advanced);
+
+        // Output the leaderboard
+        cout << "Leaderboard by Difficulty:\n";
+
+        auto printLeaderboard = [](const vector<userScore>& scores, const string& title) {
+            cout << "\n--- " << title << " ---\n";
+            int top = min(10, (int)scores.size());
+            for (int i = 0; i < top; ++i) {
+                cout << i + 1 << ". " << scores[i].username 
+                    << " | Score: " << scores[i].score
+                    << " | Accuracy: " << fixed << setprecision(2) << scores[i].accuracy << "%" << endl;
+            }
+        };
+
+        printLeaderboard(beginner, "Beginner");
+        printLeaderboard(intermediate, "Intermediate");
+        printLeaderboard(advanced, "Advanced");
     }
 
-    
-    bubbleSort(beginner);
-    bubbleSort(intermediate);
-    bubbleSort(advanced);
-
-    
-    cout << "Leaderboard by Difficulty:\n";
-
-    cout << "\n--- Beginner ---\n";
-    int top = min(10, (int)beginner.size());
-    for (int i = 0; i < top; ++i) {
-        cout << i + 1 << ". " << beginner[i].username 
-             << " | Score: " << beginner[i].score
-             << " | Accuracy: " << beginner[i].accuracy << "%" << endl;
-    }
-
-    cout << "\n--- Intermediate ---\n";
-    top = min(10, (int)intermediate.size());
-    for (int i = 0; i < top; ++i) {
-        cout << i + 1 << ". " << intermediate[i].username 
-             << " | Score: " << intermediate[i].score
-             << " | Accuracy: " << intermediate[i].accuracy << "%" << endl;
-    }
-
-    cout << "\n--- Advanced ---\n";
-    top = min(10, (int)advanced.size());
-    for (int i = 0; i < top; ++i) {
-        cout << i + 1 << ". " << advanced[i].username 
-             << " | Score: " << advanced[i].score
-             << " | Accuracy: " << advanced[i].accuracy << "%" << endl;
-    }
-}
     void afterLogin() {
     int pick;
 
+    do {
     cout << "\n\n";
     cout << "---------------------"<<endl;
     cout << "Welcome to the quiz system! What would you like to do?" << endl;
@@ -355,9 +416,10 @@ void createAccountUser() {
     cout << "4. Exit" << endl;
     cout << "---------------------";
     cout << "\n\n";
-    do {
         cout << "Enter your choice: ";
         cin >> pick;
+        cin.ignore(numeric_limits<streamsize>::max(), '\n'); 
+
 
         switch (pick) {
             case 1: {
@@ -413,15 +475,21 @@ void createAccountUser() {
 
                 
                 startQuiz(category, difficulty);
+                cout << "Press Enter to continue...";
+                cin.get();
                 break;
             }
 
             case 2:
                 viewLeaderboard();
+                cout << "Press Enter to continue...";
+                cin.get();
                 break;
 
             case 3:
                 viewOwnHistory(current_username);
+                cout << "Press Enter to continue...";
+                cin.get();
                 break;
 
             case 4:
@@ -472,22 +540,18 @@ int setTimer(Difficulty difficulty){
         }
 
         if (isFirstLine) {
-            // Display headers
             cout << line << "\n";
-            cout << string(50, '=') << "\n"; // Separator line
+            cout << string(50, '=') << "\n"; 
             isFirstLine = false;
         } else if (line.find("User, Score, Accuracy, Difficulty") != string::npos) {
             cout << "\n" << line << "\n";
-            cout << string(50, '-') << "\n"; // Separator between user summaries
+            cout << string(50, '-') << "\n"; 
         } else if (line.find("Question:") != string::npos) {
-            // Display question and its details
-            cout << line << "\n"; // Question
+            cout << line << "\n"; 
         } else if (line.find("Correct answer:") != string::npos) {
-            // Display the correct answer for the question
             cout << line << "\n";
-            cout << string(25, '-') << "\n"; // Separator between questions
+            cout << string(25, '-') << "\n"; 
         } else {
-            // Display user-specific data (like "a, 5, 100, BEGINNER, ...")
             cout << line << "\n";
         }
     }
@@ -500,15 +564,10 @@ int setTimer(Difficulty difficulty){
 
 
 void startQuiz(string category, Difficulty difficulty) {
-    static int last_quiz_id = 0;  
-    int quiz_id = ++last_quiz_id;
-
-    string title = "Quiz on " + category;
     Quiz quiz;
     quiz.loadFromFile();
 
     int num_questions;
-    // Determine number of questions based on difficulty
     switch (difficulty) {
         case BEGINNER: num_questions = 5; break;
         case INTERMEDIATE: num_questions = 10; break;
@@ -548,17 +607,15 @@ void startQuiz(string category, Difficulty difficulty) {
             cout << "Your answer (1-" << options.size() << "): ";
             cin >> user_answer;
 
-            // Validate user input
             if (cin.fail() || user_answer < 1 || user_answer > options.size()) {
-                cin.clear(); // Clear the input error flag
-                cin.ignore(numeric_limits<streamsize>::max(), '\n'); // Ignore invalid input
+                cin.clear(); 
+                cin.ignore(numeric_limits<streamsize>::max(), '\n'); 
                 cout << "Invalid input. Please enter a number between 1 and " << options.size() << ".\n";
             } else {
                 break;
             }
         }
 
-        // Check answer
         if (user_answer == question.getCorrectAnswer()) {
             ++correct_answers;
         }
@@ -567,18 +624,16 @@ void startQuiz(string category, Difficulty difficulty) {
     }
 
     int score = correct_answers;
+    int total_questions = randomized_questions.size();
     double accuracy = (double)score / randomized_questions.size() * 100.0;
 
     cout << "\nQuiz Complete!\n";
-    cout << "Your Score: " << score << " out of " << randomized_questions.size() << "\n";
+    cout << "Your Score: " << score << " out of " << total_questions << "\n";
     cout << "Accuracy: " << accuracy << "%\n";
 
-    vector<string> quiz_attempts; 
     stringstream ss;
-    ss << "Category: " << category 
-       << ", Difficulty: " << difficultyToString(difficulty)  
-       << ", Score: " << score 
-       << ", Accuracy: " << accuracy << "%" << endl;
+    ss << "Quiz Attempt Details:\n";
+    ss << "Category: " << category << endl;
 
     for (const auto& question : randomized_questions) {
         ss << "Question: " << question.getQuestionText() << "\n";
@@ -598,34 +653,37 @@ void startQuiz(string category, Difficulty difficulty) {
         ss << "-------------------------\n";
     }
 
-    quiz_attempts.push_back(ss.str());
+    string quiz_report = ss.str();
 
+    vector<string> quiz_attempts;
+    quiz_attempts.push_back(quiz_report);
 
-    storeReport(current_username, score, accuracy, difficulty, quiz_attempts);
+    storeReport(current_username, score, accuracy, difficulty, quiz_attempts, total_questions);
 }
 
-void storeReport(const string& username, int score, double accuracy, Difficulty difficulty, const vector<string>& quiz_attempts) {
-    static bool header_written = false; 
 
-    ofstream file("report.csv", ios::app);
-    if (!file.is_open()) {
-        cout << "Error opening the report file." << endl;
+    void storeReport(const string& username, int score, double accuracy, Difficulty difficulty, const vector<string>& quiz_attempts, int total_questions) {
+    ofstream report_file("../CSV-Files/report.csv", ios::app); 
+    if (!report_file.is_open()) {
+        cerr << "Error: Could not open the report file!" << endl;
         return;
     }
 
-    if (!header_written) {
-        file << "Username,Score,Accuracy,Difficulty,Quiz Attempts\n";
-        header_written = true;
-    }
+    report_file << "User: " << username << endl;
+    report_file << "Score: " << score << " / " << total_questions << endl;
+    report_file << "Accuracy: " << accuracy << "%" << endl;
+    report_file << "Difficulty: " << difficultyToString(difficulty) << endl;
+    report_file << string(50, '-') << "\n";
 
-    file << username << "," << score << "," << accuracy << "," << difficultyToString(difficulty) << ",";
     for (const auto& attempt : quiz_attempts) {
-        file << "\"" << attempt << "\"";
+        report_file << attempt << "\n";
+        report_file << string(50, '-') << "\n";
     }
-    file << "\n";
 
-    file.close();
-}
+    report_file << "------------------------------------------\n";
+    report_file.close();
+    }
+
 
     
 };
