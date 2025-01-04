@@ -21,7 +21,7 @@ void clearTerminal() {
 }
 
 
-int main(int argc, char const *argv[]) {
+int main() {
     AdminAccount admin;
     Quiz quiz;
     User user;
@@ -40,6 +40,8 @@ int main(int argc, char const *argv[]) {
         cout << "3. Exit\n" << endl;
         cout << "Enter here: ";
         cin >> mainOptionMode;
+        cin.ignore(numeric_limits<streamsize>::max(), '\n'); 
+
 
         if (mainOptionMode == 1) {
             clearTerminal();
@@ -47,6 +49,7 @@ int main(int argc, char const *argv[]) {
             cout << "--- Admin Login ---\n" << endl;
             admin.login();
 
+            MainMenu:
             while (true) {
                 int adminOption = 0;
                 clearTerminal();
@@ -137,15 +140,18 @@ int main(int argc, char const *argv[]) {
                         break;
                     }
                     case 4:   
-                    user.displayReport();
-                    break;
+                        clearTerminal();
+                        user.displayReport();
+                        cout << "Press Enter to return to the Admin Menu..." << endl;
+                        cin.get();
                     case 5:
-                        goto mainMenu;
+                        goto MainMenu;
                     case 6:
                         cout << "Exiting program. Goodbye!\n";
                         return 0;
                     default:
                         cout << "Invalid option! Please try again.\n";
+                        sleep(2);
                 }
             }
         } else if (mainOptionMode == 2) {
@@ -159,8 +165,5 @@ int main(int argc, char const *argv[]) {
         }
     }
 
-    return 0;
-
-mainMenu:
     return 0;
 }

@@ -1,5 +1,5 @@
 User, Score, Accuracy, Difficulty, Quiz Attempts
-, 5, 100, BEGINNER, Category: Math, Difficulty: BEGINNER, Score: 5, Accuracy: 100%
+a, 5, 100, BEGINNER, Category: Math, Difficulty: BEGINNER, Score: 5, Accuracy: 100%
 Question: What is 2 + 2?
   1. 2
   2. 4
@@ -38,7 +38,7 @@ Correct answer: 144
 
 --------------------
 User, Score, Accuracy, Difficulty, Quiz Attempts
-, 1, 14.2857, INTERMEDIATE, Category: History, Difficulty: INTERMEDIATE, Score: 1, Accuracy: 14.2857%
+a, 1, 14.2857, INTERMEDIATE, Category: History, Difficulty: INTERMEDIATE, Score: 1, Accuracy: 14.2857%
 Question: Who was the first African-American President of the United States?
   1. Obama
   2. Lincoln
