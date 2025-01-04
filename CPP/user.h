@@ -35,7 +35,7 @@ class User{
     User(string& email, string& username, string& password) : email(email), username(username), password(password) {};
 
     static bool isUsernameAvailable(const string& username) {
-    ifstream file("user.csv");
+    ifstream file("../CSV-Files/user.csv");
     if (!file.is_open()) {
         cout << "Error opening the file."<<endl;
     }
@@ -62,7 +62,7 @@ class User{
 }
 
 static bool isEmailAvailable(const string& input_email) {
-    ifstream file("user.csv");
+    ifstream file("../CSV-Files/user.csv");
     if (!file.is_open()) {
         cout << "Error opening the file."<<endl;
     }
@@ -91,7 +91,7 @@ static bool isEmailAvailable(const string& input_email) {
 
 
 void createAccountUser() {
-    ofstream file("user.csv", ios::app); 
+    ofstream file("../CSV-Files/user.csv", ios::app); 
     if (!file.is_open()) {
         cout << "Error opening the file." << endl;
         return;
@@ -454,29 +454,49 @@ int setTimer(Difficulty difficulty){
     }
 
     void displayReport() {
-    ifstream file("../CSV-Files/report.csv");
+    ifstream file("../CSV-Files/report.csv"); 
     if (!file.is_open()) {
-        cout << "Error opening the report file." << endl;
+        cout << "Error: Unable to open the report file.\n";
         return;
     }
 
     string line;
-    cout << "\n--- Quiz Report ---\n";
+    bool isFirstLine = true;
+
+    cout << "\n========== Quiz Report ==========\n";
+    cout << "\n\n\n";
 
     while (getline(file, line)) {
-        if (line.empty()) continue; // Skip empty lines
-
-        cout << line << endl;  // Print the header or user line
-
-        // Read and display quiz attempts
-        while (getline(file, line) && line != "--------------------") {
-            cout << line << endl; // Print each question attempt
+        if (line.empty()) {
+            continue;
         }
-        cout << "--------------------\n"; // Print separator between users
+
+        if (isFirstLine) {
+            // Display headers
+            cout << line << "\n";
+            cout << string(50, '=') << "\n"; // Separator line
+            isFirstLine = false;
+        } else if (line.find("User, Score, Accuracy, Difficulty") != string::npos) {
+            cout << "\n" << line << "\n";
+            cout << string(50, '-') << "\n"; // Separator between user summaries
+        } else if (line.find("Question:") != string::npos) {
+            // Display question and its details
+            cout << line << "\n"; // Question
+        } else if (line.find("Correct answer:") != string::npos) {
+            // Display the correct answer for the question
+            cout << line << "\n";
+            cout << string(25, '-') << "\n"; // Separator between questions
+        } else {
+            // Display user-specific data (like "a, 5, 100, BEGINNER, ...")
+            cout << line << "\n";
+        }
     }
 
     file.close();
+    cout << "\n========== End of Report ==========\n";
 }
+
+
 
 
 void startQuiz(string category, Difficulty difficulty) {
@@ -594,21 +614,16 @@ void storeReport(const string& username, int score, double accuracy, Difficulty 
     }
 
     if (!header_written) {
-        file << "User, Score, Accuracy, Difficulty, Quiz Attempts\n";
+        file << "Username,Score,Accuracy,Difficulty,Quiz Attempts\n";
         header_written = true;
     }
 
-    file << username << ", " << score << ", " << accuracy << ", " 
-         << difficultyToString(difficulty) << ", ";  
-
-    for (size_t i = 0; i < quiz_attempts.size(); ++i) {
-        file << quiz_attempts[i];
-        if (i < quiz_attempts.size() - 1) {
-            file << "; "; 
-        }
+    file << username << "," << score << "," << accuracy << "," << difficultyToString(difficulty) << ",";
+    for (const auto& attempt : quiz_attempts) {
+        file << "\"" << attempt << "\"";
     }
+    file << "\n";
 
-    file << "\n--------------------\n";
     file.close();
 }
 
@@ -617,10 +632,10 @@ void storeReport(const string& username, int score, double accuracy, Difficulty 
 
    void userMenu() {
     User user;
-    string filename = "user.csv";
+    string filename = "../CSV-Files/user.csv";
 
     int choice;
-    cout << "------User Menu-------";
+    cout << "------User Menu-------"<<endl;
     cout << "1. Register" << endl;
     cout << "2. Login" << endl;
     cout << "3. Exit" << endl;
