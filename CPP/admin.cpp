@@ -400,28 +400,5 @@ for (const auto& question : quiz.getQuestions()) {
             cout <<"Question has been successfully deleted."<<endl;
     }
 
-//     void generateAndDisplayQuiz(string category, Difficulty difficulty, int numQuestion){
-//         vector<Question> randomizedQuestions = quiz.getRandomQuestions(category, difficulty, numQuestion);
-
-//         if(randomizedQuestions.empty()){
-//             cout << "No questions available for the selected category and difficulty"<<endl;
-//             return;
-//         }
-//         cout<< "Quiz: " << category << " " << difficulty << endl;
-//        for(int i = 0; i < randomizedQuestions.size(); ++i){
-//             cout<< "Question " << i+1 <<endl;
-//             randomizedQuestions[i].display();
-//             cout<<endl;
-//        }
-//     }
-
-// ~Admin() {
-//     while (head != NULL) {
-//         Box *temp = head;
-//         head = head->next;
-//         delete temp;
-//     }
-// }
-
 };
 
