@@ -32,7 +32,7 @@ int main() {
     while (true) {
         int mainOptionMode = 0;
 
-        // Main Menu
+        menu:
         clearTerminal();
         cout << "--- Choose Option Mode ---\n" << endl;
         cout << "1. Admin" << endl;
@@ -49,8 +49,8 @@ int main() {
             cout << "--- Admin Login ---\n" << endl;
             admin.login();
 
-            MainMenu:
             while (true) {
+                MainMenu:
                 int adminOption = 0;
                 clearTerminal();
                 cout << "--- Admin Page ---\n" << endl;
@@ -66,10 +66,16 @@ int main() {
 
                 switch (adminOption) {
                     case 1:
+                        clearTerminal();
+                        cout << "--- Create an Admin Account ---\n" << endl;
                         admin.createAdminAccount();
+                        goto MainMenu;
                         break;
                     case 2:
+                        clearTerminal();
+                        cout << "--- Change Password ---\n" << endl;
                         admin.changePassword();
+                        goto MainMenu;
                         break;
                     case 3: {
                         int questionOption = 0;
@@ -86,6 +92,8 @@ int main() {
                         switch (questionOption) {
                             case 1: {
                                 // Add a new question
+                                clearTerminal();
+                                cout << "--- Adding Question ---\n" << endl;
                                 Question question = quiz.createQuestionInteractively();
                                 quiz.addQuestion(question);
                                 cout << "Question added successfully!\n";
@@ -94,9 +102,12 @@ int main() {
                             case 2: {
                                 // Delete a question
                                 int questionID;
+                                clearTerminal();
+                                cout << "--- Deleting the Question ---\n" << endl;
                                 cout << "Enter the Question ID to delete: ";
                                 cin >> questionID;
                                 quiz.removeQuestion(questionID);
+                                sleep(3);
                                 break;
                             }
                             case 3: {
@@ -162,6 +173,7 @@ int main() {
             break;
         } else {
             cout << "Invalid option! Please try again.\n";
+            sleep(2);
         }
     }
 

@@ -92,6 +92,7 @@ static bool isEmailAvailable(const string& input_email) {
 
 
 void createAccountUser() {
+    cout << "\033[2J\033[1;1H"; // clear terminal
     ofstream file("../CSV-Files/user.csv", ios::app); 
     if (!file.is_open()) {
         cout << "Error opening the file." << endl;
@@ -108,7 +109,7 @@ void createAccountUser() {
     string password;
     string confirmPassword;
 
-    
+    cout << "--- Register ---\n" << endl;
     do {
         cout << "Enter your email: ";
         cin >> email;
@@ -159,10 +160,10 @@ void createAccountUser() {
         cout << "Error opening the file." << endl;
         return;
     }
-
+    cout << "\033[2J\033[1;1H"; // clear terminal
     string username, password;
     bool loggedIn = false; 
-
+    cout << "--- Login ---\n" << endl;
     do {
         cout << "Enter your username: ";
         cin >> username;
@@ -198,7 +199,7 @@ void createAccountUser() {
                 cout << "Exiting login." << endl;
                 break; 
             }
-            
+
         }
     } while (!loggedIn); 
 
@@ -303,6 +304,8 @@ void createAccountUser() {
     }
 
     file.close();
+    cout << "Press Enter to continue...";
+    cin.get();
 }
 
 
@@ -365,6 +368,7 @@ void createAccountUser() {
 
                 leaderboard.emplace_back(username, score, accuracy, difficulty);
             }
+            
         }
 
         file.close();
@@ -401,21 +405,24 @@ void createAccountUser() {
         printLeaderboard(beginner, "Beginner");
         printLeaderboard(intermediate, "Intermediate");
         printLeaderboard(advanced, "Advanced");
+        cout << "\nPress Enter to continue...";
+        cin.get();
     }
 
     void afterLogin() {
     int pick;
 
     do {
-    cout << "\n\n";
-    cout << "---------------------"<<endl;
-    cout << "Welcome to the quiz system! What would you like to do?" << endl;
-    cout << "1. Start Quiz" << endl;
-    cout << "2. View Leaderboard" << endl;
-    cout << "3. View own's history" << endl;
-    cout << "4. Exit" << endl;
-    cout << "---------------------";
-    cout << "\n\n";
+        cout << "\033[2J\033[1;1H"; // clear terminal
+        cout << "Welcome to the quiz system!" << endl;
+        cout << "---------------------"<<endl;
+        cout << "What would you like to do?" << endl;
+        cout << "1. Start Quiz" << endl;
+        cout << "2. View Leaderboard" << endl;
+        cout << "3. View own's history" << endl;
+        cout << "4. Exit" << endl;
+        cout << "---------------------";
+        cout << "\n\n";
         cout << "Enter your choice: ";
         cin >> pick;
         cin.ignore(numeric_limits<streamsize>::max(), '\n'); 
@@ -423,6 +430,7 @@ void createAccountUser() {
 
         switch (pick) {
             case 1: {
+                cout << "\033[2J\033[1;1H"; // clear terminal
                 string category;
                 int category_input;
 
@@ -475,25 +483,23 @@ void createAccountUser() {
 
                 
                 startQuiz(category, difficulty);
-                cout << "Press Enter to continue...";
-                cin.get();
                 break;
             }
 
             case 2:
+                cout << "\033[2J\033[1;1H"; // clear terminal
                 viewLeaderboard();
-                cout << "Press Enter to continue...";
-                cin.get();
                 break;
 
             case 3:
+                cout << "\033[2J\033[1;1H"; // clear terminal
                 viewOwnHistory(current_username);
-                cout << "Press Enter to continue...";
-                cin.get();
                 break;
 
             case 4:
+                cout << "\033[2J\033[1;1H"; // clear terminal
                 cout << "Exiting..." << endl;
+                sleep(2);
                 break;
 
             default:
@@ -574,7 +580,7 @@ void startQuiz(string category, Difficulty difficulty) {
         case ADVANCED: num_questions = 15; break;
         default: num_questions = 10; break;
     }
-
+    cout << "\033[2J\033[1;1H"; // clear terminal
     vector<Question> randomized_questions = quiz.getRandomQuestions(category, difficulty, num_questions);
     if (randomized_questions.empty()) {
         cout << "No questions found for the specified category and difficulty!" << endl;
@@ -626,8 +632,8 @@ void startQuiz(string category, Difficulty difficulty) {
     int score = correct_answers;
     int total_questions = randomized_questions.size();
     double accuracy = (double)score / randomized_questions.size() * 100.0;
-
-    cout << "\nQuiz Complete!\n";
+    cout << "\033[2J\033[1;1H"; // clear terminal
+    cout << "\nQuiz Complete!\n\n";
     cout << "Your Score: " << score << " out of " << total_questions << "\n";
     cout << "Accuracy: " << accuracy << "%\n";
 
@@ -650,8 +656,11 @@ void startQuiz(string category, Difficulty difficulty) {
             ss << "Correct answer: Invalid Index\n";
         }
 
-        ss << "-------------------------\n";
+        ss << "-------------------------\n\n";
     }
+    cout << "Press ENTER to continue...";
+    fflush(stdin);
+    cin.get();
 
     string quiz_report = ss.str();
 
@@ -663,7 +672,8 @@ void startQuiz(string category, Difficulty difficulty) {
 
 
     void storeReport(const string& username, int score, double accuracy, Difficulty difficulty, const vector<string>& quiz_attempts, int total_questions) {
-    ofstream report_file("../CSV-Files/report.csv", ios::app); 
+    ofstream report_file("../CSV-Files/report.csv", ios::app);
+    cout << "\033[2J\033[1;1H"; // clear terminal 
     if (!report_file.is_open()) {
         cerr << "Error: Could not open the report file!" << endl;
         return;
@@ -692,14 +702,15 @@ void startQuiz(string category, Difficulty difficulty) {
     User user;
     string filename = "../CSV-Files/user.csv";
 
-    int choice;
-    cout << "------User Menu-------"<<endl;
-    cout << "1. Register" << endl;
-    cout << "2. Login" << endl;
-    cout << "3. Exit" << endl;
-    cout << "\n\n\n";
 
+    int choice;
     do {
+        cout << "\033[2J\033[1;1H"; // clear terminal
+        cout << "------User Menu-------\n"<<endl;
+        cout << "1. Register" << endl;
+        cout << "2. Login" << endl;
+        cout << "3. Exit" << endl;
+        cout << "\n";
         cout << "Enter your choice: ";
         cin >> choice;
 
@@ -712,7 +723,9 @@ void startQuiz(string category, Difficulty difficulty) {
                 if (proceed == 1) {
                     user.afterLogin();
                 } else if (proceed == 2) {
+                    cout << "\033[2J\033[1;1H"; // clear terminal
                     cout << "Returning to menu..." << endl;
+                    sleep(2);
                 } else {
                     cout << "Invalid option. Returning to menu..." << endl;
                 }
@@ -724,11 +737,15 @@ void startQuiz(string category, Difficulty difficulty) {
                 break;
 
             case 3:
+                cout << "\033[2J\033[1;1H"; // clear terminal
                 cout << "Exiting..." << endl;
+                sleep(2);
                 break;
 
             default:
                 cout << "Invalid choice. Please enter 1, 2, or 3." << endl;
+                sleep(2);
+                break;
         }
     } while (choice != 3);
 }

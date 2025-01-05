@@ -54,7 +54,7 @@ class AdminAccount{
 
   file.close();
   cout << "Succesfully register! - Data saved." << endl;
-  exit(0);
+  sleep(3);
 }
 
 
@@ -293,6 +293,6 @@ inline void changePassword() {
             cout << "Passwords do not match. Please try again.\n";
         }
     } while (newPasswd != newPasswd_1);
-    exit(0);
+    sleep(3);
 }
 };

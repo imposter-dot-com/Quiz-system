@@ -200,10 +200,12 @@ class Quiz{
     void removeQuestion(int question_id) {
     if (questions.find(question_id) != questions.end()) {
         available_ids.insert(question_id);  // Add ID to available IDs
-        questions.erase(question_id);  
+        questions.erase(question_id);
+        cout << "\033[2J\033[1;1H"; // clear terminal
         cout << "Question deleted successfully." <<endl;
         saveToFile("../CSV-Files/questions.csv"); // Save after removing
     } else {
+        cout << "\033[2J\033[1;1H"; // clear terminal
         cout << "Question not found." << endl;
     }
 }
@@ -212,7 +214,6 @@ class Quiz{
     int question_id = updatedQuestion.getId();
     if (questions.find(question_id) == questions.end()) {
         cout << "Question ID " << question_id << " does not exist. Cannot update." << endl;
-
         return; 
     }
 
